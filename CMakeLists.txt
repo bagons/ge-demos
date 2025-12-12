@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(game main.cpp)
 
-add_subdirectory(graphicengine)
-include_directories(graphicengine/include)
+add_subdirectory(engine)
+include_directories(engine/include)
 target_link_libraries(game graphicengine)
 
 
@@ -18,6 +18,6 @@ add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/engine/shaders"
-        "${CMAKE_CURRENT_BINARY_DIR}/engine/shaders"
+        "${CMAKE_CURRENT_SOURCE_DIR}/engine/res"
+        "${CMAKE_CURRENT_BINARY_DIR}/engine/res"
 )
