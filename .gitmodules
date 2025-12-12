@@ -1,0 +1,3 @@
+[submodule "graphicengine"]
+	path = graphicengine
+	url = https://github.com/bagons/graphicengine.git
