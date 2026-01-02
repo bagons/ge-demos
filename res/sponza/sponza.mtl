@@ -337,7 +337,7 @@ newmtl vase
 	map_Kd textures\vase_dif.png
 	map_bump textures\vase_bump.png
 
-newmtl Material__25
+newmtl lion
 	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
