@@ -5,7 +5,7 @@
 #include "graphicengine.hpp"
 #include <glm/ext.hpp>
 
-Engine ge;
+Engine ge{"demo project", 800, 600};
 
 struct RenderContext {
     // render pipeline
@@ -76,9 +76,6 @@ public:
 
 
 int main() {
-    if (gameengine("demo project") == nullptr)
-        return 1;
-
     // setup actions
     ge.input.set_action_list(std::vector{
         GLFW_KEY_W,
@@ -98,6 +95,7 @@ int main() {
     r_ctx.main_cam = camera;
 
     // spawn cube
+    std::cout << "random mesh" << std::endl;
     auto special_cube = std::make_shared<Mesh>("res/mesh.obj");
     ge.add<MeshThing>(special_cube, ge.shaders.get_base_material(true, true));
 
@@ -113,6 +111,6 @@ int main() {
 
     run(r_ctx);
 
-    return noengine();
+    return 0;
 }
 
