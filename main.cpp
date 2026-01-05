@@ -109,6 +109,9 @@ int main() {
 
     std::cout << "started running..." << std::endl;
 
+    auto point_light = ge.add<PointLight>(glm::vec3{1.0, 1.0, 1.0}, 10.0);
+    point_light->transform.position.y = 5;
+
     run(r_ctx);
 
     return 0;
