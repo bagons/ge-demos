@@ -5,7 +5,7 @@
 #include "graphicengine.hpp"
 #include <glm/ext.hpp>
 
-Engine ge{"demo project", 800, 600};
+Engine ge{"demo project", 800, 600, 16, 3};
 
 struct RenderContext {
     // render pipeline
@@ -20,7 +20,7 @@ void update() {
 }
 
 void render(RenderContext& rctx) {
-    glClearColor(0.4f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.6f, 0.8f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     rctx.fr->render();
 
@@ -94,11 +94,6 @@ int main() {
     r_ctx.fr = ge.add_render_layer<ForwardRenderer3DLayer>(camera);
     r_ctx.main_cam = camera;
 
-    // spawn cube
-    std::cout << "random mesh" << std::endl;
-    auto special_cube = std::make_shared<Mesh>("res/mesh.obj");
-    ge.add<MeshThing>(special_cube, ge.shaders.get_base_material(true, true));
-
     // spawn FPS controller
     ge.add<Player>(camera);
 
@@ -106,6 +101,11 @@ int main() {
     auto sponza_model = std::make_shared<Model>("res/sponza/sponza.obj");
     auto sponza = ge.add<ModelThing>(sponza_model);
     sponza->transform.scale = glm::vec3(0.02, 0.02, 0.02);
+
+
+    ge.add<DirectionalLight>(glm::vec3{1.0, 1.0, 1.0}, 0.8, glm::vec3{1, -1, 1});
+    ge.add<DirectionalLight>(glm::vec3{1.0, 0.6, 0.3}, 0.1, glm::vec3{1, -0.2, -1});
+    ge.add<DirectionalLight>(glm::vec3{0.3, 0.6, 1.0}, 0.05, glm::vec3{-1, -0.2, 1});
 
     std::cout << "started running..." << std::endl;
 
