@@ -1,23 +1,24 @@
 cmake_minimum_required(VERSION 3.31)
-project(game)
-
+project(demos)
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(game main.cpp)
-
+# Include Graphics Engine
 add_subdirectory(engine)
 include_directories(engine/include)
-target_link_libraries(game graphicengine)
 
+# DEMO 0
+set(DEMO0 "unit-tests")
+add_executable(DEMO0 unit-tests.cpp)
+target_link_libraries(DEMO0 graphicengine)
 
-add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
+# DEMO 1
+set(DEMO1 "sponza")
+add_executable(DEMO1 main.cpp)
+add_custom_command(TARGET DEMO1 POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/res"
         "${CMAKE_CURRENT_BINARY_DIR}/res"
 )
 
-add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/engine/res"
-        "${CMAKE_CURRENT_BINARY_DIR}/engine/res"
-)
+target_link_libraries(DEMO1 graphicengine)
+graphicengine_setup(DEMO1)
