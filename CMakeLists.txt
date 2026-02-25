@@ -10,14 +10,19 @@ include_directories(engine/include)
 set(DEMO0 "unit-tests")
 add_executable(DEMO0 unit-tests.cpp)
 target_link_libraries(DEMO0 graphicengine)
+add_custom_command(TARGET DEMO0 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/res_demo0"
+        "${CMAKE_CURRENT_BINARY_DIR}/res_demo0"
+)
 
 # DEMO 1
 set(DEMO1 "sponza")
 add_executable(DEMO1 main.cpp)
 add_custom_command(TARGET DEMO1 POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/res"
-        "${CMAKE_CURRENT_BINARY_DIR}/res"
+        "${CMAKE_CURRENT_SOURCE_DIR}/res_demo1"
+        "${CMAKE_CURRENT_BINARY_DIR}/res_demo1"
 )
 
 target_link_libraries(DEMO1 graphicengine)

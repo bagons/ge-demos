@@ -63,8 +63,7 @@ public:
             move_vec.x += 1.0f;
 
         if (ge.input.is_pressed(4) and sponza.id != -1) {
-            ge.queue_remove_thing(sponza.id);
-            sponza.id = -1;
+            sponza.queue_free();
         }
 
         Rotation::rotate_point(0, -player_cam->transform.rotation.y, 0, move_vec);
@@ -103,7 +102,7 @@ int main() {
     r_ctx.main_cam = camera;
 
     // load Spozna Palace
-    auto sponza_model = std::make_shared<Model>("res/sponza/sponza.obj");
+    auto sponza_model = std::make_shared<Model>("res_demo1/sponza/sponza.obj");
     auto sponza = ge.add<ModelThing>(sponza_model);
     sponza->transform.scale = Scale{0.02f, 0.02f, 0.02f};
 
