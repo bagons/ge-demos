@@ -18,7 +18,7 @@ add_custom_command(TARGET DEMO0 POST_BUILD
 
 # DEMO 1
 set(DEMO1 "sponza")
-add_executable(DEMO1 main.cpp)
+add_executable(DEMO1 sponza.cpp)
 target_link_libraries(DEMO1 graphicengine)
 add_custom_command(TARGET DEMO1 POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
