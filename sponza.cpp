@@ -51,8 +51,9 @@ public:
         if (ge.input.is_pressed(RIGHT))
             move_vec.x += 1.0f;
 
-        if (ge.input.just_pressed(JUMP) and abs(camera->transform.position.y - height) < 0.1)
+        if (ge.input.just_pressed(JUMP) and abs(camera->transform.position.y - height) < 0.1) {
             y_velocity = 10.0f;
+        }
 
         Rotation::rotate_point(0, -camera->transform.rotation.y, 0, move_vec);
         move_vec.normalize();
