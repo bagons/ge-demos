@@ -7,14 +7,15 @@ Demo projekt(y), který používá můj [Grafický Engine](https://github.com/ba
 **DEMO0** - Unit testy
 
 **DEMO1** - Crytek Sponza + First Person Controller
-- Ovládání: WSAD, SPACE = Skok, SHIFT = Běh, F11 = fullscreen, ESC = uvolnění myší, LEVÉ TLAČÍTKO MYŠI = znovu zamknout myš
-- PS: chvíli může trvat, než se velký model načte
+- *Ovládání:* **WSAD**, **SPACE** = Skok, **SHIFT** = Běh, **F11** = fullscreen, **ESC** = uvolnění myší, **LEVÉ TLAČÍTKO MYŠI** = znovu zamknout myš
+- *PS*: chvíli může trvat, než se velký model načte
 
-**DEMO2** - Velmi jednoduché demo s rotující kostkou, která má na sobě aplikovanou Normal Mapu. Pomocí MEZERY jde přepínat Normal Mapa (s ní / bez ní)
+**DEMO2** - Velmi jednoduché demo s rotující kostkou, která má na sobě aplikovanou Normal Mapu. Pomocí **MEZERY** jde přepínat Normal Mapa (s ní / bez ní)
+
+
+## Instalace
 
 Stačí zkompilovat projekt pomocí CMakeLists.txt souboru.
-
-## Instalce
 
 ```bash
 git clone https://github.com/bagons/ge-demos.git
