@@ -4,59 +4,43 @@
 
 #include "graphicengine.hpp"
 
-EngineSettings settings{.gamma_correction = true};
+EngineSettings settings{.MAX_NR_POINT_LIGHTS = 1, .MAX_NR_DIRECTIONAL_LIGHTS = 3, .MAX_NR_SPOT_LIGHTS = 1};
 Engine ge{"demo project", 800, 600, settings};
 
+constexpr float GRAVITY = 32.0f;
 
 enum Actions {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    JUMP,
+    SPRINT,
+    EXIT,
+    CLICK,
+    FULLSCREEN
 };
 
-struct RenderContext {
-    // render pipeline
-    geRendRef<ForwardOpaque3DPass> fp;
-    geRendRef<ColorPass> cp;
-    MeshThing* debug_thing = nullptr;
-    geRef<Camera> main_cam;
-};
-
-
-void update() {
-    ge.update();
-}
-
-void render(RenderContext& rctx) {
-    rctx.cp->render();
-    rctx.fp->render();
-    ge.send_to_window();
-}
-
-void run(RenderContext& rctx) {
-    while (ge.is_running()) {
-        update();
-        render(rctx);
-    }
-}
-
-/* Player class:
- * moves camera based on user input to create a FPS controller
- */
 class Player : public Thing {
-    float move_speed = 5.0f;
+    float move_speed = 6.0f;
+    float sprint_multiplier = 1.5f;
     float mouse_sensitivity = 0.002f;
-    geRef<Camera> player_cam;
+    float height = 1.8f;
+    geRef<Camera> camera;
+
+    float y_velocity = 0.0f;
 public:
-    explicit Player(const geRef<Camera>& cam) {
-        player_cam = cam;
-        player_cam->transform.position = Position{0.0f, 1.8f, 0.0f};
+    explicit Player(const geRef<Camera>& cam, const float player_height = 1.8f) {
+        height = player_height;
+        camera = cam;
+        camera->transform.position = Position{-20.0f, height, 0.0f};
+        camera->transform.rotation = Rotation{0, Engine::PI / 2, 0.0f};
     };
 
     void update() override {
         Vector3 move_vec{0, 0, 0};
 
+        // movement
         if (ge.input.is_pressed(FORWARD))
             move_vec.z -= 1.0f;
         if (ge.input.is_pressed(BACKWARD))
@@ -67,18 +51,39 @@ public:
         if (ge.input.is_pressed(RIGHT))
             move_vec.x += 1.0f;
 
-        Rotation::rotate_point(0, -player_cam->transform.rotation.y, 0, move_vec);
-        move_vec *= ge.frame_delta * move_speed;
-        player_cam->transform.position = player_cam->transform.position + move_vec;
+        if (ge.input.just_pressed(JUMP) and abs(camera->transform.position.y - height) < 0.1)
+            y_velocity = 10.0f;
 
-        if (abs(ge.input.mouse_move_delta.x) > 0 || abs(ge.input.mouse_move_delta.y) > 0) {
+        Rotation::rotate_point(0, -camera->transform.rotation.y, 0, move_vec);
+        move_vec.normalize();
+        move_vec *= ge.frame_delta * (ge.input.is_pressed(SPRINT) ? move_speed * sprint_multiplier : move_speed);
+
+        if (abs(y_velocity) > 0.1f) {
+            move_vec.y += ge.frame_delta * y_velocity;
+        }
+
+        camera->transform.position = camera->transform.position + move_vec;
+
+        if (camera->transform.position.y <= height) {
+            camera->transform.position.y = height;
+            y_velocity = 0;
+        } else {
+            y_velocity -= ge.frame_delta * GRAVITY;
+        }
+
+
+        // looking around
+        if (ge.input.get_mouse_mode() == Input::DISABLED and (abs(ge.input.mouse_move_delta.x) > 0 || abs(ge.input.mouse_move_delta.y) > 0)) {
             float mouse_move_x = ge.input.mouse_move_delta.x * mouse_sensitivity;
             float mouse_move_y = ge.input.mouse_move_delta.y * mouse_sensitivity;
 
-            player_cam->transform.rotation.y -= mouse_move_x;
-            player_cam->transform.rotation.x -= mouse_move_y;
-            player_cam->transform.rotation.x = std::clamp(player_cam->transform.rotation.x, -Engine::PI / 2, Engine::PI / 2);
+            camera->transform.rotation.y -= mouse_move_x;
+            camera->transform.rotation.x -= mouse_move_y;
+            camera->transform.rotation.x = std::clamp(camera->transform.rotation.x, -Engine::PI / 2, Engine::PI / 2);
         }
+        // bounds
+        camera->transform.position.x = std::clamp(camera->transform.position.x, -28.3f, 25.7f);
+        camera->transform.position.z = std::clamp(camera->transform.position.z, -12.4f, 11.3f);
     };
 };
 
@@ -91,7 +96,6 @@ public:
     void update() override {
         transform.position.x = sinf(static_cast<float>(ge.get_game_time())) * 3.0f;
         transform.position.z = cosf(static_cast<float>(ge.get_game_time())) * 3.0f;
-        //transform.rotation.z = static_cast<float>(ge.get_game_time()) * 0.1f;
     }
 };
 
@@ -101,43 +105,26 @@ int main() {
         GLFW_KEY_W,
         GLFW_KEY_S,
         GLFW_KEY_A,
-        GLFW_KEY_D
+        GLFW_KEY_D,
+        GLFW_KEY_SPACE,
+        GLFW_KEY_LEFT_SHIFT,
+        GLFW_KEY_ESCAPE,
+        GLFW_MOUSE_BUTTON_LEFT,
+        GLFW_KEY_F11,
     });
     ge.input.set_mouse_mode(Input::DISABLED);
 
-    // PIPELINE INIT
-    RenderContext r_ctx;
-
     // setup camera
     auto camera = ge.add<Camera>(45.0f, 0.1f, 100.0f);
-    auto color = Color{0.6f, 0.8f, 1.0f};
-    r_ctx.cp = ge.add_render_pass<ColorPass>(color);
-    std::cout << "COLOR" << r_ctx.cp->color.r << " " << r_ctx.cp->color.g << " " << r_ctx.cp->color.b << std::endl;
-    r_ctx.fp = ge.add_render_pass<ForwardOpaque3DPass>(camera);
-    r_ctx.main_cam = camera;
+    auto color_pass = ge.add_render_pass<ColorPass>(Color{0.6f, 0.8f, 1.0f});
+    auto forward_pass = ge.add_render_pass<ForwardOpaque3DPass>(camera);
 
     // load Spozna Palace
     auto sponza_model = std::make_shared<Model>("res_demo1/sponza/sponza.obj");
     auto sponza = ge.add<ModelThing>(sponza_model);
     sponza->transform.scale = Scale{0.02f, 0.02f, 0.02f};
 
-    // cube
-    auto cube_mesh = std::make_shared<Mesh>("res_demo1/box.obj");
-    // coordinates
-    auto Z_mat = ge.shaders.get_base_material(Shaders::VERTEX_UV_NORMAL)->copy();
-    auto z = ge.add<MeshThing>(cube_mesh, Z_mat);
-    Z_mat->set_uniform("material.albedo_color", Color::BLUE.no_alpha());
-    z->transform.position = Position{0, 0, 1};
-    z->transform.scale = Scale{0.1f};
-
-    auto X_mat = Z_mat->copy();
-    X_mat->set_uniform("material.albedo_color", Color::RED.no_alpha());
-    auto x = ge.add<MeshThing>(cube_mesh, X_mat);
-    x->transform.position = Position{1, 0, 0};
-    x->transform.scale = Scale{0.1f};
-
-    // spawn FPS controller
-
+    // lighting
     ge.lights.ambient_light = Color{0.2f, 0.2f, 0.2f};
     ge.add<DirectionalLight>(Color{0.9f, 0.9f, 0.9f, 1.0f}, 1.0f, Vector3{1.0f, -1.0f, 1.0f});
     ge.add<DirectionalLight>(Color::ORANGE, 1.0f, Vector3{1.0f, -0.2f, -1.0f});
@@ -145,17 +132,30 @@ int main() {
 
     ge.add<SpinSpot>(Color::ORANGE, 1.0f, Engine::PI/4);
 
-
-    //auto pl = ge.add<PointLight>(Color::WHITE, 1.0f);
-    //pl->transform.position.y = 3;
-
-
-
     std::cout << "started running..." << std::endl;
-
     ge.add<Player>(camera);
+    //ge.window.set_fullscreen(true);
 
-    run(r_ctx);
+    while (ge.is_running()) {
+        ge.pool_inputs();
+
+        if (ge.input.just_pressed(EXIT)) {
+            ge.input.set_mouse_mode(Input::MouseMode::NORMAL);
+        }
+
+        if (ge.input.just_pressed(CLICK)) {
+            ge.input.set_mouse_mode(Input::MouseMode::DISABLED);
+        }
+
+        if (ge.input.just_pressed(FULLSCREEN)) {
+            ge.window.set_fullscreen(!ge.window.is_fullscreen());
+        }
+
+        ge.update();
+        color_pass->render();
+        forward_pass->render();
+        ge.send_to_window();
+    }
 
     return 0;
 }
