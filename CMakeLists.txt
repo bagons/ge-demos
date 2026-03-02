@@ -26,16 +26,5 @@ add_custom_command(TARGET DEMO1 POST_BUILD
         "${CMAKE_CURRENT_BINARY_DIR}/res_demo1"
 )
 
-# DEMO 2
-set(DEMO2 "normals")
-add_executable(DEMO2 normal_map.cpp)
-target_link_libraries(DEMO2 graphicengine)
-add_custom_command(TARGET DEMO2 POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/res_demo2"
-        "${CMAKE_CURRENT_BINARY_DIR}/res_demo2"
-)
-
 graphicengine_setup(DEMO0)
 graphicengine_setup(DEMO1)
-graphicengine_setup(DEMO2)
